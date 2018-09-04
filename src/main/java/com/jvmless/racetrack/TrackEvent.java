@@ -17,24 +17,25 @@ public class TrackEvent {
     private CompetitorNumber competitor;
     private FlagEvent lastFlagEvent;
     private MessureEvent lastMessureEvent;
-    private Track track;
+    private TrackSession trackSession;
 
-    public static TrackEvent of(Track track, FlagEvent flagEvent) {
-        TrackEvent trackEvent = new TrackEvent(flagEvent.getOccurrence(), TrackEventType.FLAG, flagEvent.getNumber(), track);
-//        track.validateFlag(flagEvent);
+    public static TrackEvent of(FlagEvent flagEvent, TrackSession trackSession) {
+        TrackEvent trackEvent = new TrackEvent(flagEvent.getOccurrence(), TrackEventType.FLAG, flagEvent.getNumber(), trackSession);
+        if(trackSession.getTrack().isFinalFlag(flagEvent.getType()))
+            trackSession.sessionEnd();
         return trackEvent;
     }
 
-    public static TrackEvent of(Track track, MessureEvent messureEvent) {
-        TrackEvent trackEvent = new TrackEvent(messureEvent.getOccurrence(), TrackEventType.CHECKPOINT, messureEvent.getNumber(), track);
-        track.validateMessure(messureEvent);
+    public static TrackEvent of(MessureEvent messureEvent, TrackSession trackSession) {
+        TrackEvent trackEvent = new TrackEvent(messureEvent.getOccurrence(), TrackEventType.CHECKPOINT, messureEvent.getNumber(), trackSession);
+        trackSession.getTrack().validateMessure(messureEvent);
         return trackEvent;
     }
 
-    public TrackEvent(LocalDateTime occurrence, TrackEventType trackEventType, CompetitorNumber competitor,Track track) {
+    public TrackEvent(LocalDateTime occurrence, TrackEventType trackEventType, CompetitorNumber competitor,TrackSession trackSession) {
         this.occurrence = occurrence;
         this.trackEventType = trackEventType;
         this.competitor = competitor;
-        this.track = track;
+        this.trackSession = trackSession;
     }
 }
