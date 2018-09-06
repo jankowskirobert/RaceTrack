@@ -35,6 +35,8 @@ public class TrackLap {
         ));
         this.competitorNumber = competitorNumber;
         this.track = trackSession.getTrack();
+
+
 //        events.stream().sorted(Comparator.comparing(x -> x.getOccurrence())).
     }
 

@@ -3,21 +3,36 @@ package com.jvmless.racetrack;
 import com.jvmless.racetrack.events.FlagType;
 import com.jvmless.racetrack.events.MessureEvent;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 
 import java.util.List;
-@AllArgsConstructor(staticName = "create")
+import java.util.Objects;
+
+@Builder
 public class Track {
     private String name;
     private List<Checkpoint> checkpointList;
     private List<FlagType> finalFlags;
-//    private TrackLap bestTrackLap;
+    private Integer maximumCompetitorsInOneSession;
 
+    //    private TrackLap bestTrackLap;
     public void validateMessure(final MessureEvent messureEvent) {
-        if(!checkpointList.contains(messureEvent.getCheckpoint()))
+        if (!checkpointList.contains(messureEvent.getCheckpoint()))
             throw new IllegalStateException("Track do not contain checkpoint");
     }
 
-    public boolean isFinalFlag(FlagType flagType){
+    public boolean isFinalFlag(FlagType flagType) {
         return finalFlags.contains(flagType);
+    }
+
+    public void validateMaxCompetitorsDuringSession(int numberOfCompetitors) {
+        if (!Objects.isNull(maximumCompetitorsInOneSession) && maximumCompetitorsInOneSession.intValue() < numberOfCompetitors)
+            throw new IllegalStateException(
+                    String.format(
+                            "Track cannot handle more then %d competitors in one session, maximum is %d",
+                            numberOfCompetitors,
+                            maximumCompetitorsInOneSession.intValue()
+                    )
+            );
     }
 }

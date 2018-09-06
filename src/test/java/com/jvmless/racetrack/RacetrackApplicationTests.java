@@ -23,17 +23,58 @@ import java.util.List;
 public class RacetrackApplicationTests {
 
     @Test
-    public void contextLoads() {
-        Track track = Track.create(
-                "Silverstone",
-                Arrays.asList(
-                        Checkpoint.of(
-                                CheckpointType.START_META,
-                                "SM",
-                                1)
-                ),
-                Arrays.asList(FlagType.RED)
-        );
+    public void shouldPass_sessionContainsLowerCompetitorsThenSignedUpForRace() {
+
+
+        Track track = getTrack();
+
+        Race trackDay = new Race(track, 3, 30, LocalDateTime.now());
+        TrackSession session = TrackSession.of(ChronoUnit.MINUTES, 10, 5, LocalDateTime.now(), track);
+        trackDay.updateSessions(session);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void shouldThrowException_moreCompetitorsInSessionThenSignedUp() {
+
+
+        Track track = getTrack();
+
+        Race trackDay = new Race(track, 3, 30, LocalDateTime.now());
+        TrackSession firstSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, LocalDateTime.now(), track);
+        TrackSession secondSession = TrackSession.of(ChronoUnit.MINUTES, 20, 25, LocalDateTime.now().plus(10, ChronoUnit.MINUTES), track);
+        trackDay.updateSessions(firstSession, secondSession);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void shouldThrowException_twoSessionAtTheSameTime() {
+
+
+        Track track = getTrack();
+
+        Race trackDay = new Race(track, 3, 30, LocalDateTime.now());
+        TrackSession firstSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, LocalDateTime.now(), track);
+        TrackSession secondSession = TrackSession.of(ChronoUnit.MINUTES, 20, 15, LocalDateTime.now(), track);
+        trackDay.updateSessions(firstSession, secondSession);
+    }
+
+    private Track getTrack() {
+        return Track.builder()
+                .name("Silverstone")
+                .checkpointList(
+                        Arrays.asList(
+                                Checkpoint.of(
+                                        CheckpointType.START_META,
+                                        "SM",
+                                        1
+                                )
+                        )
+                )
+                .finalFlags(
+                        Arrays.asList(FlagType.RED)
+                )
+                .build();
+    }
+     /*
 
         LocalDateTime startTime = LocalDateTime.now();
         LocalDateTime stopTime = startTime.plus(10, ChronoUnit.MINUTES);
@@ -56,6 +97,6 @@ public class RacetrackApplicationTests {
         List<TrackEvent> eventList = Arrays.asList(event1, event2);
         TrackLap trackLap = new TrackLap(trackSession, CompetitorNumber.of(5), eventList);
         Assert.assertThat(trackLap.getTotalLapTime(), Matchers.equalTo(Duration.of(10, ChronoUnit.MINUTES)));
-    }
+      */
 
 }
