@@ -28,7 +28,7 @@ public class RacetrackApplicationTests {
 
         Track track = getTrack();
 
-        Race trackDay = new Race(track, 3, 30, LocalDateTime.now());
+        Race trackDay = new Race(3, 30, LocalDateTime.now(), track);
         TrackSession session = TrackSession.of(ChronoUnit.MINUTES, 10, 5, LocalDateTime.now(), track);
         trackDay.updateSessions(session);
     }
@@ -36,10 +36,9 @@ public class RacetrackApplicationTests {
     @Test(expected = IllegalStateException.class)
     public void shouldThrowException_moreCompetitorsInSessionThenSignedUp() {
 
-
         Track track = getTrack();
 
-        Race trackDay = new Race(track, 3, 30, LocalDateTime.now());
+        Race trackDay = new Race(3, 30, LocalDateTime.now(), track);
         TrackSession firstSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, LocalDateTime.now(), track);
         TrackSession secondSession = TrackSession.of(ChronoUnit.MINUTES, 20, 25, LocalDateTime.now().plus(10, ChronoUnit.MINUTES), track);
         trackDay.updateSessions(firstSession, secondSession);
@@ -48,12 +47,23 @@ public class RacetrackApplicationTests {
     @Test(expected = IllegalStateException.class)
     public void shouldThrowException_twoSessionAtTheSameTime() {
 
-
         Track track = getTrack();
 
-        Race trackDay = new Race(track, 3, 30, LocalDateTime.now());
+        Race trackDay = new Race(3, 30, LocalDateTime.now(), track);
         TrackSession firstSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, LocalDateTime.now(), track);
         TrackSession secondSession = TrackSession.of(ChronoUnit.MINUTES, 20, 15, LocalDateTime.now(), track);
+        trackDay.updateSessions(firstSession, secondSession);
+    }
+
+    @Test
+    public void shouldPass_twoDifferentSessionsSimultaneouslyOnDifferentTrack_sameRaceScope() {
+
+
+        Track trackBerlin = getTrack();
+        Track trackPoznan = getTrack();
+        Race trackDay = new Race(3, 30, LocalDateTime.now(), trackBerlin, trackPoznan);
+        TrackSession firstSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, LocalDateTime.now(), trackBerlin);
+        TrackSession secondSession = TrackSession.of(ChronoUnit.MINUTES, 20, 15, LocalDateTime.now(), trackPoznan);
         trackDay.updateSessions(firstSession, secondSession);
     }
 
