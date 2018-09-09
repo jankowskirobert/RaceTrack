@@ -1,22 +1,13 @@
 package com.jvmless.racetrack;
 
-import com.jvmless.racetrack.events.FlagEvent;
 import com.jvmless.racetrack.events.FlagType;
-import com.jvmless.racetrack.events.MessureEvent;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 //@RunWith(SpringRunner.class)
 //@SpringBootTest
@@ -30,7 +21,9 @@ public class RacetrackApplicationTests {
 
         Race trackDay = new Race(3, 30, LocalDateTime.now(), track);
         TrackSession session = TrackSession.of(ChronoUnit.MINUTES, 10, 5, LocalDateTime.now(), track);
-        trackDay.updateSessions(session);
+        trackDay.registerSession(session);
+        Assert.assertThat(trackDay.getMaxSessionCount(), Matchers.is(3));
+        Assert.assertThat(trackDay.getType(), Matchers.is(RaceType.MULTI_SESSION));
     }
 
     @Test(expected = IllegalStateException.class)
@@ -41,7 +34,7 @@ public class RacetrackApplicationTests {
         Race trackDay = new Race(3, 30, LocalDateTime.now(), track);
         TrackSession firstSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, LocalDateTime.now(), track);
         TrackSession secondSession = TrackSession.of(ChronoUnit.MINUTES, 20, 25, LocalDateTime.now().plus(10, ChronoUnit.MINUTES), track);
-        trackDay.updateSessions(firstSession, secondSession);
+        trackDay.registerSession(firstSession, secondSession);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -52,7 +45,33 @@ public class RacetrackApplicationTests {
         Race trackDay = new Race(3, 30, LocalDateTime.now(), track);
         TrackSession firstSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, LocalDateTime.now(), track);
         TrackSession secondSession = TrackSession.of(ChronoUnit.MINUTES, 20, 15, LocalDateTime.now(), track);
-        trackDay.updateSessions(firstSession, secondSession);
+        trackDay.registerSession(firstSession, secondSession);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowException_threeSessions() {
+
+        Track track = getTrack("1");
+
+        Race trackDay = new Race(2, 30, LocalDateTime.now(), track);
+        TrackSession firstSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, LocalDateTime.now(), track);
+        TrackSession secondSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, LocalDateTime.now().plus(10, ChronoUnit.MINUTES), track);
+        TrackSession thirdSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, LocalDateTime.now().plus(10, ChronoUnit.MINUTES), track);
+        trackDay.registerSession(firstSession, secondSession);
+        trackDay.registerSession(thirdSession);
+    }
+
+    @Test
+    public void shouldPass_threeSessions() {
+
+        Track track = getTrack("1");
+
+        Race trackDay = new Race(3, 30, LocalDateTime.now(), track);
+        TrackSession firstSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, LocalDateTime.now(), track);
+        TrackSession secondSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, LocalDateTime.now().plus(10, ChronoUnit.MINUTES), track);
+        TrackSession thirdSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, LocalDateTime.now().plus(10, ChronoUnit.MINUTES), track);
+        trackDay.registerSession(firstSession, secondSession);
+        trackDay.registerSession(thirdSession);
     }
 
     @Test
@@ -64,7 +83,9 @@ public class RacetrackApplicationTests {
         Race trackDay = new Race(3, 30, LocalDateTime.now(), trackBerlin, trackPoznan);
         TrackSession firstSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, LocalDateTime.now(), trackBerlin);
         TrackSession secondSession = TrackSession.of(ChronoUnit.MINUTES, 20, 15, LocalDateTime.now(), trackPoznan);
-        trackDay.updateSessions(firstSession, secondSession);
+        trackDay.registerSession(firstSession, secondSession);
+        Assert.assertThat(trackDay.getMaxSessionCount(), Matchers.is(6));
+        Assert.assertThat(trackDay.getType(), Matchers.is(RaceType.SPLIT));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -76,8 +97,10 @@ public class RacetrackApplicationTests {
         Race trackDay = new Race(3, 30, LocalDateTime.now(), trackBerlin);
         TrackSession firstSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, LocalDateTime.now(), trackBerlin);
         TrackSession secondSession = TrackSession.of(ChronoUnit.MINUTES, 20, 15, LocalDateTime.now(), trackPoznan);
-        trackDay.updateSessions(firstSession, secondSession);
+        trackDay.registerSession(firstSession, secondSession);
     }
+
+
 
     private Track getTrack(String id) {
         return Track.builder()

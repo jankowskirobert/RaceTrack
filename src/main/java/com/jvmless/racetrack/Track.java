@@ -52,7 +52,7 @@ public class Track {
         return Objects.hash(trackId);
     }
 
-    public static Predicate<Track> isSameAvailable(List<Track> track){
+    public static Predicate<Track> isIncluded(List<Track> track){
         return x -> track.contains(x);
     }
 }

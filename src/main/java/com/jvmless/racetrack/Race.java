@@ -8,14 +8,20 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/*
+SessionCount per Track!!!!
+ */
 @Getter
 public class Race {
+
     private RaceId raceId;
     private String description;
-    private List<TrackSession> trackSessions;
+    private int maxSessions;
+    private Set<TrackSession> trackSessions;
     private int competitorsCount;
     private LocalDateTime raceDate;
     private List<Track> tracks;
+    private RaceType type;
 
     public Race(int sessionCount, int competitorsCount, LocalDateTime raceDate, String description, Track... tracks) {
         setUpRace(sessionCount, competitorsCount, raceDate, description, Arrays.stream(tracks).collect(Collectors.toList()));
@@ -28,10 +34,26 @@ public class Race {
     private void setUpRace(int sessionCount, int competitorsCount, LocalDateTime raceDate, String description, List<Track> tracks) {
         this.raceId = RaceId.of(UUID.randomUUID().toString());
         this.description = description;
-        trackSessions = new ArrayList<>(sessionCount);
         this.raceDate = raceDate;
         this.competitorsCount = competitorsCount;
         this.tracks = tracks;
+        this.trackSessions = new HashSet<>();
+        setRaceTypeAndSessionCount(sessionCount, tracks);
+    }
+
+    private void setRaceTypeAndSessionCount(int sessionCount, List<Track> tracks) {
+        int trackSize = tracks.size();
+        if (trackSize > 1) {
+            type = RaceType.SPLIT;
+            maxSessions = sessionCount * trackSize;
+        } else {
+            if (sessionCount > 1)
+                type = RaceType.MULTI_SESSION;
+            else
+                type = RaceType.SINGLE_SESSION;
+            maxSessions = sessionCount;
+        }
+
     }
 
     public Race(int sessionCount, int competitorsCount, LocalDateTime raceDate, String description, @NonNull List<Track> tracks) {
@@ -42,24 +64,43 @@ public class Race {
         setUpRace(sessionCount, competitorsCount, raceDate, null, tracks);
     }
 
-    public void updateSessions(@NonNull List<TrackSession> sessions) {
-        update(sessions);
+    public void registerSession(@NonNull List<TrackSession> sessions) {
+        register(sessions);
     }
 
-    public void updateSessions(@NonNull TrackSession... sessions) {
-        update(Arrays.asList(sessions));
+    public void registerSession(@NonNull TrackSession... sessions) {
+        register(Arrays.asList(sessions));
     }
 
-    private void update(List<TrackSession> sessions) {
+    private void register(@NonNull List<TrackSession> sessions) {
         validateTrackSessionOnTrack(sessions);
         validateSessionStartEnd(sessions);
         validateSessionCompetitors(sessions);
-        this.trackSessions = sessions;
+        validateAddTrackSessions(sessions);
+    }
+
+    private void validateAddTrackSessions(@NonNull List<TrackSession> sessions) {
+        if (!sessions.isEmpty()) {
+            if ((trackSessions == null || trackSessions.isEmpty())) {
+                this.trackSessions.addAll(sessions);
+                return;
+            }
+            if (trackSessions.size() + sessions.size() <= maxSessions) {
+                trackSessions.addAll(sessions);
+            } else {
+                throw new IllegalArgumentException(String.format("Current sessions size: %d, max: %d, new sessions: %d", trackSessions.size(), maxSessions, sessions.size()));
+            }
+        } else
+            throw new IllegalArgumentException("Cannot add empty track session");
+    }
+
+    public int getMaxSessionCount() {
+        return maxSessions;
     }
 
     private void validateTrackSessionOnTrack(List<TrackSession> sessions) {
-        boolean sessionBelongsToTrack = sessions.stream().map(x -> x.getTrack()).distinct().allMatch(Track.isSameAvailable(tracks));
-        if(!sessionBelongsToTrack)
+        boolean sessionBelongsToTrack = sessions.stream().map(x -> x.getTrack()).distinct().allMatch(Track.isIncluded(tracks));
+        if (!sessionBelongsToTrack)
             throw new IllegalArgumentException("Cannot handle session for unconfigured tracks");
     }
 
