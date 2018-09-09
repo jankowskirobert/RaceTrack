@@ -3,6 +3,7 @@ package com.jvmless.racetrack;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NonNull;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -37,8 +38,13 @@ public class TrackSession {
         return new TrackSession(sessionNumber, Duration.of(unitValue, unit), numberOfCompetitors, Collections.emptyList(), sessionStart, track, sessionStart.plus(unitValue, unit));
     }
 
-    public void attacheLaps(List<TrackLap> trackLaps){
-        this.records = trackLaps;
+    public void attacheEvents(@NonNull List<TrackEvent> events){
+        validateEvents(events);
+    }
+
+    private void validateEvents(List<TrackEvent> events) {
+        if(events.stream().map(TrackEvent::getTrackSession).noneMatch(sessionOfEvent -> sessionOfEvent.equals(this)))
+            throw new IllegalArgumentException("Cannot attache event to current session");
     }
 
     public void sessionEnd() {

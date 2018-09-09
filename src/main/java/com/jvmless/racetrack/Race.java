@@ -56,6 +56,25 @@ public class Race {
 
     }
 
+    public void attacheHistory(@NonNull List<TrackEvent> events) {
+        history(events);
+    }
+
+    public void attacheHistory(@NonNull TrackEvent... events) {
+        history(Arrays.asList(events));
+    }
+
+    private void history(@NonNull List<TrackEvent> events) {
+        trackSessions.stream()
+                .forEach(
+                        session -> session.attacheEvents(
+                                events.stream()
+                                        .filter(event -> event.getTrackSession().equals(session))
+                                        .collect(Collectors.toList())
+                        )
+                );
+    }
+
     public Race(int sessionCount, int competitorsCount, LocalDateTime raceDate, String description, @NonNull List<Track> tracks) {
         setUpRace(sessionCount, competitorsCount, raceDate, description, tracks);
     }
