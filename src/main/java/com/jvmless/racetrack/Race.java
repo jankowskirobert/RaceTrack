@@ -2,12 +2,14 @@ package com.jvmless.racetrack;
 
 import com.jvmless.racetrack.events.RaceId;
 import lombok.Getter;
+import lombok.NonNull;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Getter
 public class Race {
@@ -35,27 +37,33 @@ public class Race {
         this.tracks = tracks;
     }
 
-    public Race(int sessionCount, int competitorsCount, LocalDateTime raceDate, String description, List<Track> tracks) {
+    public Race(int sessionCount, int competitorsCount, LocalDateTime raceDate, String description, @NonNull List<Track> tracks) {
         setUpRace(sessionCount, competitorsCount, raceDate, description, tracks);
     }
 
-    public Race(int sessionCount, int competitorsCount, LocalDateTime raceDate, List<Track> tracks) {
+    public Race(int sessionCount, int competitorsCount, LocalDateTime raceDate, @NonNull List<Track> tracks) {
         setUpRace(sessionCount, competitorsCount, raceDate, null, tracks);
     }
 
-    public void updateSessions(List<TrackSession> sessions) {
+    public void updateSessions(@NonNull List<TrackSession> sessions) {
         update(sessions);
     }
 
-    public void updateSessions(TrackSession... sessions) {
+    public void updateSessions(@NonNull TrackSession... sessions) {
         update(Arrays.asList(sessions));
     }
 
     private void update(List<TrackSession> sessions) {
-//        validateTrackSessionOnTrack();
+        validateTrackSessionOnTrack(sessions);
         validateSessionStartEnd(sessions);
         validateSessionCompetitors(sessions);
         this.trackSessions = sessions;
+    }
+
+    private void validateTrackSessionOnTrack(List<TrackSession> sessions) {
+        boolean sessionBelongsToTrack = sessions.stream().map(x -> x.getTrack()).distinct().allMatch(track -> tracks.contains(track));
+        if(!sessionBelongsToTrack);
+            throw new IllegalArgumentException("Cannot handle session for unconfigured tracks");
     }
 
     private void validateSessionCompetitors(List<TrackSession> sessions) {

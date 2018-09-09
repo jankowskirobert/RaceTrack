@@ -4,12 +4,14 @@ import com.jvmless.racetrack.events.FlagType;
 import com.jvmless.racetrack.events.MessureEvent;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 
 import java.util.List;
 import java.util.Objects;
 
 @Builder
 public class Track {
+    private TrackId trackId;
     private String name;
     private List<Checkpoint> checkpointList;
     private List<FlagType> finalFlags;
@@ -34,5 +36,18 @@ public class Track {
                             maximumCompetitorsInOneSession.intValue()
                     )
             );
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Track track = (Track) o;
+        return Objects.equals(trackId, track.trackId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(trackId);
     }
 }

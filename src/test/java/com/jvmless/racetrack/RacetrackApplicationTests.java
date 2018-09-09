@@ -67,8 +67,21 @@ public class RacetrackApplicationTests {
         trackDay.updateSessions(firstSession, secondSession);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowException_trackSessionForDifferentTrack() {
+
+
+        Track trackBerlin = getTrack();
+        Track trackPoznan = getTrack();
+        Race trackDay = new Race(3, 30, LocalDateTime.now(), trackBerlin);
+        TrackSession firstSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, LocalDateTime.now(), trackBerlin);
+        TrackSession secondSession = TrackSession.of(ChronoUnit.MINUTES, 20, 15, LocalDateTime.now(), trackPoznan);
+        trackDay.updateSessions(firstSession, secondSession);
+    }
+
     private Track getTrack() {
         return Track.builder()
+                .trackId(TrackId.of("1"))
                 .name("Silverstone")
                 .checkpointList(
                         Arrays.asList(
