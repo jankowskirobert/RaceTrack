@@ -18,15 +18,15 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
+//@RunWith(SpringRunner.class)
+//@SpringBootTest
 public class RacetrackApplicationTests {
 
     @Test
     public void shouldPass_sessionContainsLowerCompetitorsThenSignedUpForRace() {
 
 
-        Track track = getTrack();
+        Track track = getTrack("1");
 
         Race trackDay = new Race(3, 30, LocalDateTime.now(), track);
         TrackSession session = TrackSession.of(ChronoUnit.MINUTES, 10, 5, LocalDateTime.now(), track);
@@ -36,7 +36,7 @@ public class RacetrackApplicationTests {
     @Test(expected = IllegalStateException.class)
     public void shouldThrowException_moreCompetitorsInSessionThenSignedUp() {
 
-        Track track = getTrack();
+        Track track = getTrack("1");
 
         Race trackDay = new Race(3, 30, LocalDateTime.now(), track);
         TrackSession firstSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, LocalDateTime.now(), track);
@@ -47,7 +47,7 @@ public class RacetrackApplicationTests {
     @Test(expected = IllegalStateException.class)
     public void shouldThrowException_twoSessionAtTheSameTime() {
 
-        Track track = getTrack();
+        Track track = getTrack("1");
 
         Race trackDay = new Race(3, 30, LocalDateTime.now(), track);
         TrackSession firstSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, LocalDateTime.now(), track);
@@ -59,8 +59,8 @@ public class RacetrackApplicationTests {
     public void shouldPass_twoDifferentSessionsSimultaneouslyOnDifferentTrack_sameRaceScope() {
 
 
-        Track trackBerlin = getTrack();
-        Track trackPoznan = getTrack();
+        Track trackBerlin = getTrack("1");
+        Track trackPoznan = getTrack("2");
         Race trackDay = new Race(3, 30, LocalDateTime.now(), trackBerlin, trackPoznan);
         TrackSession firstSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, LocalDateTime.now(), trackBerlin);
         TrackSession secondSession = TrackSession.of(ChronoUnit.MINUTES, 20, 15, LocalDateTime.now(), trackPoznan);
@@ -71,17 +71,17 @@ public class RacetrackApplicationTests {
     public void shouldThrowException_trackSessionForDifferentTrack() {
 
 
-        Track trackBerlin = getTrack();
-        Track trackPoznan = getTrack();
+        Track trackBerlin = getTrack("1");
+        Track trackPoznan = getTrack("2");
         Race trackDay = new Race(3, 30, LocalDateTime.now(), trackBerlin);
         TrackSession firstSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, LocalDateTime.now(), trackBerlin);
         TrackSession secondSession = TrackSession.of(ChronoUnit.MINUTES, 20, 15, LocalDateTime.now(), trackPoznan);
         trackDay.updateSessions(firstSession, secondSession);
     }
 
-    private Track getTrack() {
+    private Track getTrack(String id) {
         return Track.builder()
-                .trackId(TrackId.of("1"))
+                .trackId(TrackId.of(id))
                 .name("Silverstone")
                 .checkpointList(
                         Arrays.asList(

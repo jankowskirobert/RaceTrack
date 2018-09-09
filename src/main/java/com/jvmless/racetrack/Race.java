@@ -5,10 +5,7 @@ import lombok.Getter;
 import lombok.NonNull;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Getter
@@ -21,11 +18,11 @@ public class Race {
     private List<Track> tracks;
 
     public Race(int sessionCount, int competitorsCount, LocalDateTime raceDate, String description, Track... tracks) {
-        setUpRace(sessionCount, competitorsCount, raceDate, description, Arrays.asList(tracks));
+        setUpRace(sessionCount, competitorsCount, raceDate, description, Arrays.stream(tracks).collect(Collectors.toList()));
     }
 
     public Race(int sessionCount, int competitorsCount, LocalDateTime raceDate, Track... tracks) {
-        setUpRace(sessionCount, competitorsCount, raceDate, null, Arrays.asList(tracks));
+        setUpRace(sessionCount, competitorsCount, raceDate, null, Arrays.stream(tracks).collect(Collectors.toList()));
     }
 
     private void setUpRace(int sessionCount, int competitorsCount, LocalDateTime raceDate, String description, List<Track> tracks) {
@@ -61,8 +58,8 @@ public class Race {
     }
 
     private void validateTrackSessionOnTrack(List<TrackSession> sessions) {
-        boolean sessionBelongsToTrack = sessions.stream().map(x -> x.getTrack()).distinct().allMatch(track -> tracks.contains(track));
-        if(!sessionBelongsToTrack);
+        boolean sessionBelongsToTrack = sessions.stream().map(x -> x.getTrack()).distinct().allMatch(Track.isSameAvailable(tracks));
+        if(!sessionBelongsToTrack)
             throw new IllegalArgumentException("Cannot handle session for unconfigured tracks");
     }
 

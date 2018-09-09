@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 @Builder
 public class Track {
@@ -49,5 +50,9 @@ public class Track {
     @Override
     public int hashCode() {
         return Objects.hash(trackId);
+    }
+
+    public static Predicate<Track> isSameAvailable(List<Track> track){
+        return x -> track.contains(x);
     }
 }
