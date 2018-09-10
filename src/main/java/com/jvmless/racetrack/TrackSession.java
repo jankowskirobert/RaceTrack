@@ -38,13 +38,20 @@ public class TrackSession {
         return new TrackSession(sessionNumber, Duration.of(unitValue, unit), numberOfCompetitors, Collections.emptyList(), sessionStart, track, sessionStart.plus(unitValue, unit));
     }
 
-    public void attacheEvents(@NonNull List<TrackEvent> events){
+    public void attacheEvents(@NonNull final List<TrackEvent> events) {
         validateEvents(events);
     }
 
     private void validateEvents(List<TrackEvent> events) {
-        if(events.stream().map(TrackEvent::getTrackSession).noneMatch(sessionOfEvent -> sessionOfEvent.equals(this)))
+        if (events.stream().map(TrackEvent::getTrackSession).noneMatch(sessionOfEvent -> sessionOfEvent.equals(this)))
             throw new IllegalArgumentException("Cannot attache event to current session");
+        events.stream().map(TrackEvent::getOccurrence).max(Comparator.naturalOrder()).ifPresent(
+                x -> {
+                    if (x.isAfter(sessionEnd))
+                        throw new IllegalStateException("Cannot add event that is after track session");
+                }
+        );
+
     }
 
     public void sessionEnd() {

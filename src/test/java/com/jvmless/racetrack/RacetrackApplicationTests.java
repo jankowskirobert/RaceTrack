@@ -152,6 +152,25 @@ public class RacetrackApplicationTests {
         trackDay.attacheHistory(event1, event2);
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void shouldThrowException_eventAfterTrackSession() {
+        LocalDateTime trackSessionStart = LocalDateTime.now();
+        LocalDateTime eventTime = trackSessionStart.plus(40, ChronoUnit.MINUTES);
+
+        MessureEvent start = MessureEvent.of(
+                eventTime,
+                Checkpoint.of(CheckpointType.START_META, "SM", 1),
+                CompetitorNumber.of(5)
+        );
+
+        Track trackBerlin = getTrack("1");
+
+        TrackSession firstSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, trackSessionStart, trackBerlin);
+        TrackEvent event1 = TrackEvent.of(start, firstSession);
+        firstSession.sessionEnd();
+        firstSession.attacheEvents(Arrays.asList(event1));
+    }
+
     private Track getTrack(String id) {
         return Track.builder()
                 .trackId(TrackId.of(id))
