@@ -39,19 +39,34 @@ public class TrackSession {
     }
 
     public void attacheEvents(@NonNull final List<TrackEvent> events) {
-        validateEvents(events);
+        validateTrackSessionMatchEvents(events);
+        validateEventAfterEndTime(events);
+        validateEventBeforeStartTime(events);
     }
 
-    private void validateEvents(List<TrackEvent> events) {
+    private void validateEventBeforeStartTime(List<TrackEvent> events) {
+        events.stream().map(TrackEvent::getOccurrence).min(Comparator.naturalOrder()).ifPresent(
+                x -> {
+                    if (x.isBefore(sessionStart))
+                        throw new IllegalStateException("Cannot add event that is before track session");
+                }
+        );
+    }
+
+    private void validateTrackSessionMatchEvents(List<TrackEvent> events) {
         if (events.stream().map(TrackEvent::getTrackSession).noneMatch(sessionOfEvent -> sessionOfEvent.equals(this)))
             throw new IllegalArgumentException("Cannot attache event to current session");
+
+
+    }
+
+    private void validateEventAfterEndTime(List<TrackEvent> events) {
         events.stream().map(TrackEvent::getOccurrence).max(Comparator.naturalOrder()).ifPresent(
                 x -> {
                     if (x.isAfter(sessionEnd))
                         throw new IllegalStateException("Cannot add event that is after track session");
                 }
         );
-
     }
 
     public void sessionEnd() {

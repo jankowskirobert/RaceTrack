@@ -125,7 +125,8 @@ public class RacetrackApplicationTests {
     @Test
     public void shouldPass_sessionHistory() {
 
-        LocalDateTime startTime = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startTime = now;
         LocalDateTime stopTime = startTime.plus(10, ChronoUnit.MINUTES);
 
         MessureEvent start = MessureEvent.of(
@@ -141,9 +142,9 @@ public class RacetrackApplicationTests {
         );
 
         Track trackBerlin = getTrack("1");
-        Race trackDay = new Race(3, 30, LocalDateTime.now(), trackBerlin);
-        TrackSession firstSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, LocalDateTime.now(), trackBerlin);
-        TrackSession secondSession = TrackSession.of(ChronoUnit.MINUTES, 20, 15, LocalDateTime.now().plus(10, ChronoUnit.MINUTES), trackBerlin);
+        Race trackDay = new Race(3, 30, now, trackBerlin);
+        TrackSession firstSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, now, trackBerlin);
+        TrackSession secondSession = TrackSession.of(ChronoUnit.MINUTES, 20, 15, now.plus(10, ChronoUnit.MINUTES), trackBerlin);
         trackDay.registerSession(firstSession, secondSession);
 
         TrackEvent event1 = TrackEvent.of(start, firstSession);
@@ -168,6 +169,23 @@ public class RacetrackApplicationTests {
         TrackSession firstSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, trackSessionStart, trackBerlin);
         TrackEvent event1 = TrackEvent.of(start, firstSession);
         firstSession.sessionEnd();
+        firstSession.attacheEvents(Arrays.asList(event1));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void shouldThrowException_sessionStartAfterEvent() {
+        LocalDateTime eventTime = LocalDateTime.now();
+
+        MessureEvent startMeta = MessureEvent.of(
+                eventTime,
+                Checkpoint.of(CheckpointType.START_META, "SM", 1),
+                CompetitorNumber.of(5)
+        );
+
+        Track trackBerlin = getTrack("1");
+
+        TrackSession firstSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, LocalDateTime.now().plus(1, ChronoUnit.MINUTES), trackBerlin);
+        TrackEvent event1 = TrackEvent.of(startMeta, firstSession);
         firstSession.attacheEvents(Arrays.asList(event1));
     }
 
