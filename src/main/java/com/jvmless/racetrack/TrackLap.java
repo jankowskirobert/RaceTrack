@@ -24,17 +24,17 @@ public class TrackLap {
     Track track;
 
     public TrackLap(TrackSession trackSession, CompetitorNumber competitorNumber, List<TrackEvent> events) {
-        Assert.isTrue(events.stream().allMatch(
-                x -> x.getCompetitor().equals(competitorNumber)
-        ), "Cannot apply events to given competitor");
-        Assert.isTrue(events.stream().allMatch(
-                x -> x.getTrackSession().equals(trackSession)
-        ), "Cannot apply events to given track session");
-        Assert.isTrue(events.stream().allMatch(
-                x -> x.getOccurrence().isBefore(trackSession.getSessionStart())
-        ));
-        this.competitorNumber = competitorNumber;
-        this.track = trackSession.getTrack();
+//        Assert.isTrue(events.stream().allMatch(
+//                x -> x.getCompetitor().equals(competitorNumber)
+//        ), "Cannot apply events to given competitor");
+//        Assert.isTrue(events.stream().allMatch(
+//                x -> x.getTrackSession().equals(trackSession)
+//        ), "Cannot apply events to given track session");
+//        Assert.isTrue(events.stream().allMatch(
+//                x -> x.getOccurrence().isBefore(trackSession.getSessionStart())
+//        ));
+//        this.competitorNumber = competitorNumber;
+//        this.track = trackSession.getTrack();
 
 
 //        events.stream().sorted(Comparator.comparing(x -> x.getOccurrence())).

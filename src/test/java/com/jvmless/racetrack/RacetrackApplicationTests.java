@@ -1,7 +1,7 @@
 package com.jvmless.racetrack;
 
 import com.jvmless.racetrack.events.FlagType;
-import com.jvmless.racetrack.events.MessureEvent;
+import com.jvmless.racetrack.events.MeasureEvent;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -106,19 +106,19 @@ public class RacetrackApplicationTests {
 
         LocalDateTime startTime = LocalDateTime.now();
 
-        MessureEvent start = MessureEvent.of(
-                startTime,
-                Checkpoint.of(CheckpointType.START_META, "SM", 1),
-                CompetitorNumber.of(5)
-        );
 
         Track trackBerlin = getTrack("1");
 
         TrackSession firstSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, LocalDateTime.now(), trackBerlin);
         TrackSession secondSession = TrackSession.of(ChronoUnit.MINUTES, 20, 15, LocalDateTime.now().plus(10, ChronoUnit.MINUTES), trackBerlin);
 
-        TrackEvent event1 = TrackEvent.of(start, secondSession);
-        firstSession.attacheEvents(Arrays.asList(event1));
+        MeasureEvent start = MeasureEvent.of(
+                startTime,
+                Checkpoint.of(CheckpointType.START_META, "SM", 1),
+                CompetitorNumber.of(5),
+                secondSession
+        );
+        firstSession.attacheMeasureEvents(Arrays.asList(start));
 
     }
 
@@ -129,28 +129,27 @@ public class RacetrackApplicationTests {
         LocalDateTime startTime = now;
         LocalDateTime stopTime = startTime.plus(10, ChronoUnit.MINUTES);
 
-        MessureEvent start = MessureEvent.of(
-                startTime,
-                Checkpoint.of(CheckpointType.START_META, "SM", 1),
-                CompetitorNumber.of(5)
-        );
 
-        MessureEvent stop = MessureEvent.of(
-                stopTime,
-                Checkpoint.of(CheckpointType.START_META, "SM", 1),
-                CompetitorNumber.of(5)
-        );
 
         Track trackBerlin = getTrack("1");
         Race trackDay = new Race(3, 30, now, trackBerlin);
         TrackSession firstSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, now, trackBerlin);
         TrackSession secondSession = TrackSession.of(ChronoUnit.MINUTES, 20, 15, now.plus(10, ChronoUnit.MINUTES), trackBerlin);
         trackDay.registerSession(firstSession, secondSession);
+        MeasureEvent start = MeasureEvent.of(
+                startTime,
+                Checkpoint.of(CheckpointType.START_META, "SM", 1),
+                CompetitorNumber.of(5),
+                firstSession
+        );
 
-        TrackEvent event1 = TrackEvent.of(start, firstSession);
-        TrackEvent event2 = TrackEvent.of(stop, secondSession);
-
-        trackDay.attacheHistory(event1, event2);
+        MeasureEvent stop = MeasureEvent.of(
+                stopTime,
+                Checkpoint.of(CheckpointType.START_META, "SM", 1),
+                CompetitorNumber.of(5),
+                secondSession
+        );
+//        trackDay.attacheHistory(start, stop);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -158,35 +157,86 @@ public class RacetrackApplicationTests {
         LocalDateTime trackSessionStart = LocalDateTime.now();
         LocalDateTime eventTime = trackSessionStart.plus(40, ChronoUnit.MINUTES);
 
-        MessureEvent start = MessureEvent.of(
-                eventTime,
-                Checkpoint.of(CheckpointType.START_META, "SM", 1),
-                CompetitorNumber.of(5)
-        );
 
         Track trackBerlin = getTrack("1");
 
         TrackSession firstSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, trackSessionStart, trackBerlin);
-        TrackEvent event1 = TrackEvent.of(start, firstSession);
+        MeasureEvent start = MeasureEvent.of(
+                eventTime,
+                Checkpoint.of(CheckpointType.START_META, "SM", 1),
+                CompetitorNumber.of(5),
+                firstSession
+
+        );
+
         firstSession.sessionEnd();
-        firstSession.attacheEvents(Arrays.asList(event1));
+        firstSession.attacheMeasureEvents(Arrays.asList(start));
     }
 
     @Test(expected = IllegalStateException.class)
-    public void shouldThrowException_sessionStartAfterEvent() {
+    public void shouldThrowException_eventBeforeSession() {
         LocalDateTime eventTime = LocalDateTime.now();
 
-        MessureEvent startMeta = MessureEvent.of(
-                eventTime,
-                Checkpoint.of(CheckpointType.START_META, "SM", 1),
-                CompetitorNumber.of(5)
-        );
+
 
         Track trackBerlin = getTrack("1");
 
         TrackSession firstSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, LocalDateTime.now().plus(1, ChronoUnit.MINUTES), trackBerlin);
-        TrackEvent event1 = TrackEvent.of(startMeta, firstSession);
-        firstSession.attacheEvents(Arrays.asList(event1));
+        MeasureEvent startMeta = MeasureEvent.of(
+                eventTime,
+                Checkpoint.of(CheckpointType.START_META, "SM", 1),
+                CompetitorNumber.of(5),
+                firstSession
+        );
+        firstSession.attacheMeasureEvents(Arrays.asList(startMeta));
+    }
+
+    @Test
+    public void shouldPass_measureTime() {
+        LocalDateTime eventTime = LocalDateTime.now().plus(1, ChronoUnit.MINUTES);
+
+
+
+        Track trackBerlin = getTrack("1");
+
+        TrackSession firstSession = TrackSession.of(ChronoUnit.MINUTES, 10, 15, LocalDateTime.now(), trackBerlin);
+        MeasureEvent start = MeasureEvent.of(
+                eventTime,
+                Checkpoint.of(CheckpointType.START_META, "SM", 1),
+                CompetitorNumber.of(5),
+                firstSession
+        );
+        MeasureEvent stop = MeasureEvent.of(
+                eventTime,
+                Checkpoint.of(CheckpointType.START_META, "SM", 1),
+                CompetitorNumber.of(5),
+                firstSession
+        );
+        firstSession.attacheMeasureEvents(Arrays.asList(start, stop));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void shouldThrowException_tooMuchRidersEventsInSession() {
+        LocalDateTime eventTime = LocalDateTime.now().plus(1, ChronoUnit.MINUTES);
+
+
+
+        Track trackBerlin = getTrack("1");
+
+        TrackSession firstSession = TrackSession.of(ChronoUnit.MINUTES, 10, 1, LocalDateTime.now(), trackBerlin);
+        MeasureEvent start = MeasureEvent.of(
+                eventTime,
+                Checkpoint.of(CheckpointType.START_META, "SM", 1),
+                CompetitorNumber.of(5),
+                firstSession
+        );
+        MeasureEvent stop = MeasureEvent.of(
+                eventTime,
+                Checkpoint.of(CheckpointType.START_META, "SM", 1),
+                CompetitorNumber.of(6),
+                firstSession
+        );
+        firstSession.attacheMeasureEvents(Arrays.asList(start, stop));
     }
 
     private Track getTrack(String id) {
@@ -211,13 +261,13 @@ public class RacetrackApplicationTests {
 
         LocalDateTime startTime = LocalDateTime.now();
         LocalDateTime stopTime = startTime.plus(10, ChronoUnit.MINUTES);
-        MessureEvent start = MessureEvent.of(
+        MeasureEvent start = MeasureEvent.of(
                 startTime,
                 Checkpoint.of(CheckpointType.START_META, "SM", 1),
                 CompetitorNumber.of(5)
         );
 
-        MessureEvent stop = MessureEvent.of(
+        MeasureEvent stop = MeasureEvent.of(
                 stopTime,
                 Checkpoint.of(CheckpointType.START_META, "SM", 1),
                 CompetitorNumber.of(5)

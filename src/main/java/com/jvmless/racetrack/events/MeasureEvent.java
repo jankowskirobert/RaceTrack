@@ -8,15 +8,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+
 @Getter
 @AllArgsConstructor(staticName = "of")
 public class MeasureEvent implements TrackEvent {
     private LocalDateTime occurrence;
     private Checkpoint checkpoint;
     private CompetitorNumber number;
-
-    @Override
-    public TrackSession getTrackSession() {
-        return null;
-    }
+    private TrackSession trackSession;
 }

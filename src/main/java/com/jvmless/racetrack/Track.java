@@ -1,16 +1,16 @@
 package com.jvmless.racetrack;
 
 import com.jvmless.racetrack.events.FlagType;
-import com.jvmless.racetrack.events.MessureEvent;
-import lombok.AllArgsConstructor;
+import com.jvmless.racetrack.events.MeasureEvent;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 
 @Builder
+@Getter
 public class Track {
     private TrackId trackId;
     private String name;
@@ -19,8 +19,8 @@ public class Track {
     private Integer maximumCompetitorsInOneSession;
 
     //    private TrackLap bestTrackLap;
-    public void validateMessure(final MessureEvent messureEvent) {
-        if (!checkpointList.contains(messureEvent.getCheckpoint()))
+    public void validateMessure(final MeasureEvent measureEvent) {
+        if (!checkpointList.contains(measureEvent.getCheckpoint()))
             throw new IllegalStateException("Track do not contain checkpoint");
     }
 

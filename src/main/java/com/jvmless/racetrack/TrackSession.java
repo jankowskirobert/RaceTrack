@@ -1,5 +1,7 @@
 package com.jvmless.racetrack;
 
+import com.jvmless.racetrack.events.FlagEvent;
+import com.jvmless.racetrack.events.MeasureEvent;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,10 +10,10 @@ import lombok.NonNull;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalUnit;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /*
 Sesja sie zaczyna przed tym jak pojawią się okrążenia
@@ -38,14 +40,41 @@ public class TrackSession {
         return new TrackSession(sessionNumber, Duration.of(unitValue, unit), numberOfCompetitors, Collections.emptyList(), sessionStart, track, sessionStart.plus(unitValue, unit));
     }
 
-    public void attacheEvents(@NonNull final List<TrackEvent> events) {
+    public void attacheMeasureEvents(@NonNull final List<MeasureEvent> events) {
+        validateEvents(events);
+        validateRiders(events);
+        List<Checkpoint> checkpointList = track.getCheckpointList();
+        Stream<MeasureEvent> sortedTime = events.stream().sorted(Comparator.comparing(MeasureEvent::getOccurrence));
+        List<Checkpoint> sortedMeasure = sortedTime.map(x -> x.getCheckpoint()).collect(Collectors.toList());
+        List<Checkpoint> measure = sortedMeasure.subList(0, checkpointList.size());
+        if (!checkpointList.equals(measure))
+            throw new IllegalStateException("Checkpoint not match track specification");
+    }
+
+    private void validateRiders(@NonNull List<MeasureEvent> events) {
+        long uniqueRiders = events.stream().map(MeasureEvent::getNumber).distinct().count();
+        if (uniqueRiders > competitorsCount)
+            throw new IllegalStateException("More riders in session then registered");
+    }
+
+    public void attacheFlagEvents(@NonNull final List<FlagEvent> events) {
+        validateEvents(events);
+    }
+
+    private void validateEvents(@NonNull List<? extends TrackEvent> events) {
         validateTrackSessionMatchEvents(events);
         validateEventAfterEndTime(events);
         validateEventBeforeStartTime(events);
     }
 
-    private void validateEventBeforeStartTime(List<TrackEvent> events) {
-        events.stream().map(TrackEvent::getOccurrence).min(Comparator.naturalOrder()).ifPresent(
+    private void validateEventBeforeStartTime(List<? extends TrackEvent> events) {
+        Stream<LocalDateTime> localDateTimeStream = events.stream().map(TrackEvent::getOccurrence);
+        /*
+        zwalidowac eventy dla poszczegolnych zawodnikow,
+        nie moze byc dwoch eventow pomiarowych dla tego samego zawodnika w tym samym czasie
+         */
+
+        localDateTimeStream.min(Comparator.naturalOrder()).ifPresent(
                 x -> {
                     if (x.isBefore(sessionStart))
                         throw new IllegalStateException("Cannot add event that is before track session");
@@ -53,14 +82,14 @@ public class TrackSession {
         );
     }
 
-    private void validateTrackSessionMatchEvents(List<TrackEvent> events) {
+    private void validateTrackSessionMatchEvents(List<? extends TrackEvent> events) {
         if (events.stream().map(TrackEvent::getTrackSession).noneMatch(sessionOfEvent -> sessionOfEvent.equals(this)))
             throw new IllegalArgumentException("Cannot attache event to current session");
 
 
     }
 
-    private void validateEventAfterEndTime(List<TrackEvent> events) {
+    private void validateEventAfterEndTime(List<? extends TrackEvent> events) {
         events.stream().map(TrackEvent::getOccurrence).max(Comparator.naturalOrder()).ifPresent(
                 x -> {
                     if (x.isAfter(sessionEnd))
