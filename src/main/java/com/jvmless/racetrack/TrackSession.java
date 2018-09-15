@@ -23,11 +23,10 @@ ktos moze zjechac np do boxu juz w czasie trwania kolejnej sesji,
 dodac event ktory mowi o zjezdzie do boxu i walidacje
 
  */
-@Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class TrackSession {
     private TrackSessionId sessionNumber;
-    private Duration sessionDuration;
+//    private Duration sessionDuration;
     private int competitorsCount;
     private List<TrackLap> records;
     private LocalDateTime sessionStart;
@@ -37,7 +36,7 @@ public class TrackSession {
     public static TrackSession of(TemporalUnit unit, long unitValue, int numberOfCompetitors, LocalDateTime sessionStart, Track track) {
         track.validateMaxCompetitorsDuringSession(numberOfCompetitors);
         TrackSessionId sessionNumber = TrackSessionId.of(UUID.randomUUID().toString());
-        return new TrackSession(sessionNumber, Duration.of(unitValue, unit), numberOfCompetitors, Collections.emptyList(), sessionStart, track, sessionStart.plus(unitValue, unit));
+        return new TrackSession(sessionNumber, numberOfCompetitors, Collections.emptyList(), sessionStart, track, sessionStart.plus(unitValue, unit));
     }
 
     public void attacheMeasureEvents(@NonNull final List<MeasureEvent> events) {
@@ -102,5 +101,10 @@ public class TrackSession {
         this.sessionEnd = LocalDateTime.now();
     }
 
+    public boolean nextSessionValid(TrackSession nextSession){
+        boolean after = nextSession.sessionStart.isAfter(this.sessionEnd);
+        boolean sameTrack = this.track.equals(nextSession.track);
+        return after && sameTrack;
+    }
 
 }

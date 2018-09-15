@@ -130,8 +130,11 @@ public class Race {
     }
 
     private void validateSessionStartEnd(List<TrackSession> sessions) {
+        List<TrackSession> sessionList = new ArrayList<>();
+        sessionList.addAll(sessions);
+        sessionList.addAll(trackSessions);
         if (sessions.size() > 1)
-            for (int i = 0; i < sessions.size() - 1; i++) {
+            for (int i = 0; i < sessionList.size() - 1; i++) {
                 TrackSession trackSession = sessions.get(i);
                 TrackSession nextTrackSession = sessions.get(i + 1);
                 if (nextTrackSession.getSessionStart().isBefore(trackSession.getSessionEnd()) && trackSession.getTrack().equals(nextTrackSession.getTrack())) {
