@@ -1,5 +1,6 @@
 package com.jvmless.racetrack;
 
+import com.jvmless.racetrack.events.RaceId;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.springframework.util.Assert;
@@ -21,7 +22,8 @@ public class TrackLap {
     Duration bestLap;
     Duration lastLapTime;
     CompetitorNumber competitorNumber;
-    Track track;
+    TrackId track;
+    RaceId raceId;
 
     public TrackLap(TrackSession trackSession, CompetitorNumber competitorNumber, List<TrackEvent> events) {
 //        Assert.isTrue(events.stream().allMatch(
