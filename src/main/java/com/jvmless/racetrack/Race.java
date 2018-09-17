@@ -38,7 +38,9 @@ public class Race {
     //
     private Set<CompetitorNumber> disqualifiedNumbers;
 
-    public static Race prepare(RaceId raceId, int competitorsCount, Track track, WinStrategy winStrategy) {
+    public static Race prepare(RaceId raceId, int competitorsCount, Track track, WinStrategy winStrategy, RaceHistory raceHistory) {
+        if(competitorsCount != raceHistory.numberOfCompetitors())
+            throw new IllegalStateException("Incorrect number of competitors");
         return new Race(
                 new Random().nextLong(),
                 raceId,
@@ -54,8 +56,6 @@ public class Race {
                 new HashSet<>()
         );
     }
-
-    public void
 
     public void registerCompetitor(final Competitor competitor) {
         if (competitorNumbers.size() < competitorsCount && status.equals(RaceStatus.INITIALIZED))
